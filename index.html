@@ -15,7 +15,8 @@
 
     <div role="tablist" class="tabs tabs-lifted">
 
-      <input type="radio" name="pickplace_tabs" role="tab" class="tab" aria-label="Ruangan Tersedia" checked />
+      <input type="radio" name="pickplace_tabs" role="tab" class="tab" aria-label="Ruangan Tersedia" id="tab-rooms"
+        checked />
       <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
         <div class="overflow-x-auto">
           <table class="table w-full">
@@ -33,8 +34,16 @@
         </div>
       </div>
 
-      <input type="radio" name="pickplace_tabs" role="tab" class="tab" aria-label="Status Peminjaman" />
+      <input type="radio" name="pickplace_tabs" role="tab" class="tab" aria-label="Status Peminjaman"
+        id="tab-requests" />
       <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">Riwayat Pengajuan</h3>
+          <input type="text" id="search-input" placeholder="Cari Nama Peminjam..."
+            class="input input-bordered input-sm w-full max-w-xs" />
+        </div>
+
         <div class="overflow-x-auto">
           <table class="table w-full">
             <thead>
@@ -67,19 +76,20 @@
     <dialog id="booking_modal" class="modal">
       <div class="modal-box w-11/12 max-w-lg">
         <h3 class="font-bold text-lg">Pinjam Ruangan: <span id="modal-room-name" class="text-secondary"></span></h3>
-        
+
         <input type="hidden" id="booking-room-id" />
 
         <form id="booking-form" class="space-y-4 mt-4">
-          
+
           <div class="form-control">
             <label class="label"><span class="label-text">Nama Peminjam</span></label>
-            <input type="text" id="borrower-name" placeholder="Nama Lengkapmu" class="input input-bordered w-full" required />
+            <input type="text" id="borrower-name" placeholder="Nama Lengkap anda" class="input input-bordered w-full"
+              required />
           </div>
 
           <div class="form-control">
             <label class="label"><span class="label-text">Asal Organisasi</span></label>
-            <input type="text" id="org-name" placeholder="BEM / Hima / Klub" class="input input-bordered w-full" required />
+            <input type="text" id="org-name" placeholder="BEM/Hima/UKM" class="input input-bordered w-full" required />
           </div>
 
           <div class="flex gap-4">
@@ -95,12 +105,64 @@
 
           <div class="form-control">
             <label class="label"><span class="label-text">Keperluan</span></label>
-            <textarea id="purpose" class="textarea textarea-bordered w-full" placeholder="Contoh: Rapat Koordinasi Tahunan" required></textarea>
+            <textarea id="purpose" class="textarea textarea-bordered w-full"
+              placeholder="Contoh: Rapat Koordinasi Tahunan" required></textarea>
           </div>
 
           <div class="modal-action">
             <button type="button" class="btn" onclick="booking_modal.close()">Batal</button>
             <button type="submit" class="btn btn-primary">Kirim Request</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog id="edit_modal" class="modal">
+      <div class="modal-box w-11/12 max-w-lg">
+        <h3 class="font-bold text-lg text-info">Edit Detail Pengajuan</h3>
+        <p class="text-xs text-gray-500 mb-4">Ruangan & Organisasi tidak dapat diubah. Silakan buat pengajuan baru jika
+          ada kesalahan lokasi.</p>
+
+        <input type="hidden" id="edit-booking-id" />
+        <input type="hidden" id="edit-room-id" />
+        <input type="hidden" id="edit-org-name" /> <input type="hidden" id="edit-purpose" />
+        <form id="edit-form" class="space-y-4">
+          <div class="form-control">
+            <label class="label"><span class="label-text font-bold">Nama Peminjam</span></label>
+            <input type="text" id="edit-borrower-name" class="input input-bordered w-full" required />
+          </div>
+
+          <div class="flex gap-4">
+            <div class="form-control w-1/2">
+              <label class="label"><span class="label-text font-bold">Waktu Mulai</span></label>
+              <input type="datetime-local" id="edit-start-time" class="input input-bordered w-full" required />
+            </div>
+            <div class="form-control w-1/2">
+              <label class="label"><span class="label-text font-bold">Waktu Selesai</span></label>
+              <input type="datetime-local" id="edit-end-time" class="input input-bordered w-full" required />
+            </div>
+          </div>
+
+          <div class="bg-base-200 p-4 rounded-xl mb-4 border border-base-300">
+            <div class="grid grid-cols-2 gap-y-3 text-sm">
+              <div>
+                <span class="text-xs font-bold text-gray-400 uppercase">Ruangan</span>
+                <p id="edit-room-display" class="font-semibold text-primary"></p>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-gray-400 uppercase">Organisasi</span>
+                <p id="edit-org-display" class="font-semibold text-gray-700"></p>
+              </div>
+              <div class="col-span-2 border-t border-base-300 pt-2">
+                <span class="text-xs font-bold text-gray-400 uppercase">Keperluan</span>
+                <p id="edit-purpose-display" class="text-gray-600"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-action">
+            <button type="button" class="btn" onclick="edit_modal.close()">Batal</button>
+            <button type="submit" class="btn btn-info">Simpan Perubahan</button>
           </div>
         </form>
       </div>
