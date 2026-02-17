@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>PickPlace - Admin Dashboard</title>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+  <div class="navbar bg-neutral text-neutral-content shadow-lg px-8">
+    <div class="flex-1">
+      <a class="btn btn-ghost text-xl font-bold">Admin Panel</a>
+    </div>
+    <div class="flex-none">
+      <a href="index.html" class="btn btn-sm btn-outline btn-accent">Ke Halaman User -></a>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto p-8">
+    
+    <div class="stats shadow w-full mb-8 bg-white">
+      <div class="stat">
+        <div class="stat-title text-warning font-bold">Menunggu Persetujuan</div>
+        <div class="stat-value text-warning" id="count-pending">0</div>
+        <div class="stat-desc">Request baru yang perlu dicek</div>
+      </div>
+      
+      <div class="stat">
+        <div class="stat-title text-success font-bold">Disetujui Hari Ini</div>
+        <div class="stat-value text-success" id="count-approved">0</div>
+        <div class="stat-desc">Jadwal fix</div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl border border-gray-200">
+      <div class="card-body">
+        <h2 class="card-title text-red-500 mb-4">Perlu Tindakan</h2>
+        <div class="overflow-x-auto">
+          <table class="table w-full">
+            <thead>
+              <tr class="bg-base-200">
+                <th>Pemohon</th>
+                <th>Ruangan & Waktu</th>
+                <th>Keperluan</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="admin-pending-table">
+              </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapse collapse-arrow bg-base-100 shadow-md mt-6 border border-gray-200">
+      <input type="checkbox" /> 
+      <div class="collapse-title text-xl font-medium text-gray-600">
+        Lihat Semua Data Peminjaman
+      </div>
+      <div class="collapse-content"> 
+        <div class="overflow-x-auto">
+            <table class="table table-xs w-full">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Organisasi</th>
+                  <th>Ruang</th>
+                  <th>Waktu</th>
+                </tr>
+              </thead>
+              <tbody id="admin-all-table"></tbody>
+            </table>
+          </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="/admin.js"></script>
+</body>
+</html>

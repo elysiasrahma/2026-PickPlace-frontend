@@ -11,7 +11,20 @@
 
 <body class="p-8 bg-base-200 min-h-screen" data-theme="cupcake">
   <div class="max-w-6xl mx-auto">
-    <h1 class="text-4xl font-extrabold mb-8 text-center text-primary">PickPlace Dashboard</h1>
+    <div class="navbar bg-base-100 mb-8 rounded-box shadow-sm">
+      <div class="flex-1">
+        <a class="btn btn-ghost text-2xl font-extrabold text-primary">PickPlace Dashboard</a>
+      </div>
+      <div class="flex-none">
+        <button onclick="cekPasswordAdmin()" class="btn btn-ghost btn-sm text-gray-400 hover:text-error">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+        </button>
+      </div>
+    </div>
 
     <div role="tablist" class="tabs tabs-lifted">
 
@@ -20,6 +33,7 @@
       <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
         <div class="overflow-x-auto">
           <table class="table w-full">
+            <h3 class="font-bold text-lg">Daftar Ruangan Tersedia</h3>
             <thead>
               <tr class="text-center">
                 <th class="text-left">Nama Ruangan</th>
@@ -53,11 +67,36 @@
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody id="request-table">
+            <tbody id="active-table"> </tbody>
             </tbody>
           </table>
         </div>
       </div>
+
+      <input type="radio" name="pickplace_tabs" role="tab" class="tab" aria-label="Riwayat" id="tab-history" />
+      <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">Arsip Riwayat</h3>
+          <input type="text" id="search-history" placeholder="Cari riwayat..."
+            class="input input-bordered input-sm w-full max-w-xs" />
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Organisasi</th>
+                <th>Ruangan</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="history-table">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
     <dialog id="detail_modal" class="modal">
@@ -170,6 +209,18 @@
 
   </div>
   <script type="module" src="/main.js"></script>
+  <script>
+    function cekPasswordAdmin() {
+      // Password Hardcode sederhana
+      const password = prompt("Masukkan PIN Admin:");
+
+      if (password === "1234") { // Ganti "1234" dengan PIN rahasia kamu
+        window.location.href = "admin.html";
+      } else if (password !== null) {
+        alert("Password salah! Anda bukan admin.");
+      }
+    }
+  </script>
 </body>
 
 </html>

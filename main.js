@@ -29,7 +29,7 @@ async function loadRooms() {
           </button>
         </td>
       </tr>
-    `,
+    `
       )
       .join("");
   } catch (error) {
@@ -39,42 +39,38 @@ async function loadRooms() {
   }
 }
 
-// 2. Fungsi Ambil Riwayat Request
-// 2. Fungsi Ambil Riwayat Request (Bisa Search)
-async function loadRequests(keyword = "") {
+async function loadActiveRequests(keyword = "") {
   try {
-    // Kalau ada keyword search, tambahkan ke URL
     let url = "http://localhost:5250/api/bookings";
-    if (keyword) {
-      url += `?search=${keyword}`;
-    }
+    if (keyword) url += `?search=${keyword}`;
 
     const response = await fetch(url);
     const bookings = await response.json();
-    const requestTable = document.getElementById("request-table");
+    const activeTable = document.getElementById("active-table");
 
-    if (bookings.length === 0) {
-      requestTable.innerHTML = `<tr><td colspan="3" class="text-center italic text-gray-500 p-4">Data tidak ditemukan.</td></tr>`;
+    const activeData = bookings.filter(item => 
+        ['Pending', 'Approved', 'On Going'].includes(item.Status)
+    );
+
+    if (activeData.length === 0) {
+      activeTable.innerHTML = `<tr><td colspan="3" class="text-center italic text-gray-500 p-4">Tidak ada peminjaman aktif.</td></tr>`;
       return;
     }
 
-    requestTable.innerHTML = bookings
-      .map((item) => {
-        // Di dalam loop/map loadRequests
-        const editButton =
-          item.Status === "Pending"
-            ? `<button class="btn btn-xs btn-outline btn-info ml-2 btn-edit" 
-        data-id="${item.Id}"
-        data-borrower="${item.BorrowerName}"
-        data-org="${item.Organization}"
-        data-start="${item.StartTime}"
-        data-end="${item.EndTime}"
-        data-purpose="${item.Purpose}"
-        data-roomid="${item.RoomId}"
-        data-roomname="${item.Room?.RoomName || "Ruangan"}">
-        Edit
-     </button>`
-            : "";
+    activeTable.innerHTML = activeData.map((item) => {
+        const editButton = item.Status === "Pending"
+          ? `<button class="btn btn-xs btn-outline btn-info ml-2 btn-edit" 
+                data-id="${item.Id}"
+                data-borrower="${item.BorrowerName}"
+                data-org="${item.Organization}"
+                data-start="${item.StartTime}"
+                data-end="${item.EndTime}"
+                data-purpose="${item.Purpose}"
+                data-roomid="${item.RoomId}"
+                data-roomname="${item.Room?.RoomName || "Ruangan"}">Edit</button>` : "";
+
+        const cancelButton = item.Status === "Pending"
+          ? `<button class="btn btn-xs btn-outline btn-error ml-1 btn-delete" data-id="${item.Id}">Cancel</button>` : "";
 
         return `
         <tr class="hover">
@@ -82,63 +78,88 @@ async function loadRequests(keyword = "") {
               <div class="font-bold">${item.Organization}</div>
               <div class="text-xs text-gray-500">${item.BorrowerName}</div>
           </td>
-          <td>${item.Room ? item.Room.RoomName : "Ruangan Tidak Dikenal"}</td>
+          <td>${item.Room ? item.Room.RoomName : "-"}</td>
           <td>
             <div class="flex items-center justify-between">
-              <span class="badge ${item.Status === "Approved" ? "badge-success" : "badge-warning"}">
-                ${item.Status}
-              </span>
-              ${editButton}
+              <span class="badge ${item.Status === 'Approved' ? 'badge-success' : 'badge-warning'}">${item.Status}</span>
+              <div class="flex">${editButton}${cancelButton}</div>
             </div>
           </td>
-        </tr>
-      `;
-      })
-      .join("");
+        </tr>`;
+      }).join("");
+
   } catch (error) {
-    console.error("Gagal memuat riwayat:", error);
-    const requestTable = document.getElementById("request-table");
-    requestTable.innerHTML = `
-      <tr>
-        <td colspan="3" class="text-center text-error font-bold p-4 bg-red-50">
-           Gagal mengambil data!<br>
-           <span class="text-xs font-normal text-gray-600">Cek Terminal Backend & Console Browser (F12)</span>
+    console.error("Gagal load active:", error);
+  }
+}
+
+async function loadHistoryRequests(keyword = "") {
+  try {
+    const searchParam = keyword ? `&search=${keyword}` : "";
+    const searchParamFuture = keyword ? `?search=${keyword}` : "";
+
+    const resPast = await fetch(`http://localhost:5250/api/bookings?isHistory=true${searchParam}`);
+    const dataPast = await resPast.json();
+
+    const resFuture = await fetch(`http://localhost:5250/api/bookings${searchParamFuture}`);
+    const dataFuture = await resFuture.json();
+    
+    const futureHistory = dataFuture.filter(item => 
+        ['Rejected', 'Cancelled'].includes(item.Status)
+    );
+
+    const allHistory = [...dataPast, ...futureHistory];
+    const historyTable = document.getElementById("history-table");
+
+    if (allHistory.length === 0) {
+      historyTable.innerHTML = `<tr><td colspan="3" class="text-center italic text-gray-400 p-4">Riwayat tidak ditemukan.</td></tr>`;
+      return;
+    }
+
+    historyTable.innerHTML = allHistory.map(item => `
+      <tr class="opacity-60 hover:opacity-100 transition">
+        <td>
+            <div class="font-bold line-through decoration-gray-400">${item.Organization}</div>
+            <div class="text-xs">${item.BorrowerName}</div>
         </td>
-      </tr>`;
+        <td>${item.Room ? item.Room.RoomName : '-'}</td>
+        <td>
+          <span class="badge ${
+            item.Status === 'Completed' ? 'badge-neutral' : 'badge-error'
+          }">
+            ${item.Status}
+          </span>
+        </td>
+      </tr>
+    `).join('');
+
+  } catch (error) {
+    console.error("Gagal load history:", error);
   }
 }
 
 window.openDetailModal = (name, building, facilities, issues) => {
   document.getElementById("detail-title").innerText = name;
-
   const contentDiv = document.getElementById("detail-content");
-
-  const issuesDisplay =
-    issues && issues !== "null" && issues !== ""
+  const issuesDisplay = issues && issues !== "null" && issues !== ""
       ? `<p class="text-error font-bold">⚠️ ${issues}</p>`
       : `<p class="text-success italic">✓ Tidak ada kerusakan</p>`;
 
   contentDiv.innerHTML = `
     <div class="flex flex-col gap-4">
-      
       <div class="bg-base-200 p-3 rounded-lg">
-        <h4 class="font-bold text-xs text-gray-500 uppercase mb-1">Lokasi / Gedung</h4>
+        <h4 class="font-bold text-xs text-gray-500 uppercase mb-1">Lokasi</h4>
         <p class="text-gray-800 font-medium">${building}</p>
       </div>
-
       <div class="bg-base-200 p-3 rounded-lg">
-        <h4 class="font-bold text-xs text-gray-500 uppercase mb-1">Fasilitas Tersedia</h4>
+        <h4 class="font-bold text-xs text-gray-500 uppercase mb-1">Fasilitas</h4>
         <p class="text-gray-700 italic">${facilities}</p>
       </div>
-
       <div class="bg-red-50 p-3 rounded-lg border border-red-100">
-        <h4 class="font-bold text-xs text-red-400 uppercase mb-1">Laporan Kerusakan</h4>
+        <h4 class="font-bold text-xs text-red-400 uppercase mb-1">Laporan</h4>
         ${issuesDisplay}
       </div>
-
-    </div>
-  `;
-
+    </div>`;
   document.getElementById("detail_modal").showModal();
 };
 
@@ -148,70 +169,14 @@ window.openBookingModal = (roomId, roomName) => {
   document.getElementById("booking_modal").showModal();
 };
 
-document
-  .getElementById("booking-form")
-  .addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const payload = {
-      BorrowerName: document.getElementById("borrower-name").value,
-      Organization: document.getElementById("org-name").value,
-      RoomId: parseInt(document.getElementById("booking-room-id").value),
-      StartTime: document.getElementById("start-time").value,
-      EndTime: document.getElementById("end-time").value,
-      Purpose: document.getElementById("purpose").value,
-      Status: "Pending",
-    };
-
-    console.log("Mengirim data:", payload);
-
-    try {
-      const res = await fetch("http://localhost:5250/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        alert("Berhasil! Request peminjaman sudah dikirim.");
-        document.getElementById("booking_modal").close();
-        document.getElementById("booking-form").reset();
-
-        document.getElementById("tab-requests").checked = true;
-
-        loadRequests();
-      } else {
-        const errorText = await res.text();
-        alert("Gagal mengirim request: " + errorText);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Terjadi kesalahan koneksi.");
-    }
-  });
-
-// PASTIKAN pakai window. di depannya
-window.openEditModal = (
-  id,
-  borrower,
-  org,
-  start,
-  end,
-  purpose,
-  roomId,
-  roomName,
-) => {
-  console.log("Tombol edit dipencet untuk ID:", id); // Untuk tes di F12
-
+window.openEditModal = (id, borrower, org, start, end, purpose, roomId, roomName) => {
   document.getElementById("edit-booking-id").value = id;
   document.getElementById("edit-room-id").value = roomId;
 
-  // tampil aj
   document.getElementById("edit-room-display").innerText = roomName;
   document.getElementById("edit-org-display").innerText = org;
-  document.getElementById("edit-purpose-display").innerText = purpose; // Detail tambahan
+  document.getElementById("edit-purpose-display").innerText = purpose;
 
-  // bisa diedit
   document.getElementById("edit-borrower-name").value = borrower;
   document.getElementById("edit-start-time").value = start.substring(0, 16);
   document.getElementById("edit-end-time").value = end.substring(0, 16);
@@ -222,32 +187,39 @@ window.openEditModal = (
   document.getElementById("edit_modal").showModal();
 };
 
-document.getElementById("search-input").addEventListener("keyup", (e) => {
-  const keyword = e.target.value;
-  loadRequests(keyword);
-});
-
-document.addEventListener("click", function (e) {
-  if (e.target && e.target.classList.contains("btn-edit")) {
-    const btn = e.target;
-
-    const id = btn.getAttribute("data-id");
-    const borrower = btn.getAttribute("data-borrower");
-    const org = btn.getAttribute("data-org");
-    const start = btn.getAttribute("data-start");
-    const end = btn.getAttribute("data-end");
-    const purpose = btn.getAttribute("data-purpose");
-    const roomId = btn.getAttribute("data-roomid");
-    const roomName = btn.getAttribute("data-roomname");
-
-    window.openEditModal(id, borrower, org, start, end, purpose, roomId, roomName);
-  }
+document.getElementById("booking-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      BorrowerName: document.getElementById("borrower-name").value,
+      Organization: document.getElementById("org-name").value,
+      RoomId: parseInt(document.getElementById("booking-room-id").value),
+      StartTime: document.getElementById("start-time").value,
+      EndTime: document.getElementById("end-time").value,
+      Purpose: document.getElementById("purpose").value,
+      Status: "Pending",
+    };
+    try {
+      const res = await fetch("http://localhost:5250/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        alert("Berhasil! Request peminjaman sudah dikirim.");
+        document.getElementById("booking_modal").close();
+        document.getElementById("booking-form").reset();
+        
+        document.getElementById("tab-requests").checked = true; 
+        loadActiveRequests();
+      } else {
+        alert("Gagal mengirim request: " + await res.text());
+      }
+    } catch (err) { console.error(err); alert("Terjadi kesalahan koneksi."); }
 });
 
 document.getElementById("edit-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("edit-booking-id").value;
-
   const payload = {
     Id: parseInt(id),
     BorrowerName: document.getElementById("edit-borrower-name").value,
@@ -258,27 +230,62 @@ document.getElementById("edit-form").addEventListener("submit", async (e) => {
     Purpose: document.getElementById("edit-purpose").value, 
     Status: "Pending" 
   };
-
   try {
     const res = await fetch(`http://localhost:5250/api/bookings/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-
     if (res.ok) {
       alert("Perubahan berhasil disimpan!");
       document.getElementById("edit_modal").close();
-      loadRequests(); 
+      loadActiveRequests(); 
     } else {
-      const errorText = await res.text();
-      alert("Gagal mengedit: " + errorText);
+      alert("Gagal mengedit: " + await res.text());
     }
-  } catch (err) {
-    console.error(err);
-    alert("Terjadi kesalahan koneksi.");
+  } catch (err) { console.error(err); alert("Terjadi kesalahan koneksi."); }
+});
+
+document.addEventListener("click", async function (e) {
+  if (e.target && e.target.classList.contains("btn-edit")) {
+    const btn = e.target;
+    window.openEditModal(
+        btn.getAttribute("data-id"),
+        btn.getAttribute("data-borrower"),
+        btn.getAttribute("data-org"),
+        btn.getAttribute("data-start"),
+        btn.getAttribute("data-end"),
+        btn.getAttribute("data-purpose"),
+        btn.getAttribute("data-roomid"),
+        btn.getAttribute("data-roomname")
+    );
+  }
+
+  if (e.target && e.target.classList.contains("btn-delete")) {
+    const id = e.target.getAttribute("data-id");
+    if (confirm("Apakah Anda yakin ingin membatalkan pengajuan ini?")) {
+        try {
+            const res = await fetch(`http://localhost:5250/api/bookings/${id}`, { method: "DELETE" });
+            if (res.ok) {
+                alert("Pengajuan berhasil dibatalkan.");
+                loadActiveRequests();
+            } else {
+                alert("Gagal membatalkan.");
+            }
+        } catch (err) { console.error(err); }
+    }
   }
 });
 
+document.getElementById("search-input").addEventListener("keyup", (e) => {
+  loadActiveRequests(e.target.value);
+});
+document.getElementById("search-history").addEventListener("keyup", (e) => {
+  loadHistoryRequests(e.target.value);
+});
+
+document.getElementById('tab-history').addEventListener('click', () => loadHistoryRequests());
+document.getElementById('tab-requests').addEventListener('click', () => loadActiveRequests());
+
 loadRooms();
-loadRequests();
+loadActiveRequests();
