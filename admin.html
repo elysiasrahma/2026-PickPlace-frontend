@@ -1,83 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>PickPlace - Admin Dashboard</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>PickPlace - Admin Dashboard</title>
 </head>
+
 <body class="bg-gray-100 min-h-screen font-sans">
 
-  <div class="navbar bg-neutral text-neutral-content shadow-lg px-8">
-    <div class="flex-1">
-      <a class="btn btn-ghost text-xl font-bold">Admin Panel</a>
-    </div>
-    <div class="flex-none">
-      <a href="index.html" class="btn btn-sm btn-outline btn-accent">Ke Halaman User -></a>
-    </div>
-  </div>
-
-  <div class="max-w-6xl mx-auto p-8">
-    
-    <div class="stats shadow w-full mb-8 bg-white">
-      <div class="stat">
-        <div class="stat-title text-warning font-bold">Menunggu Persetujuan</div>
-        <div class="stat-value text-warning" id="count-pending">0</div>
-        <div class="stat-desc">Request baru yang perlu dicek</div>
-      </div>
-      
-      <div class="stat">
-        <div class="stat-title text-success font-bold">Disetujui Hari Ini</div>
-        <div class="stat-value text-success" id="count-approved">0</div>
-        <div class="stat-desc">Jadwal fix</div>
-      </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-xl border border-gray-200">
-      <div class="card-body">
-        <h2 class="card-title text-red-500 mb-4">Perlu Tindakan</h2>
-        <div class="overflow-x-auto">
-          <table class="table w-full">
-            <thead>
-              <tr class="bg-base-200">
-                <th>Pemohon</th>
-                <th>Ruangan & Waktu</th>
-                <th>Keperluan</th>
-                <th class="text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="admin-pending-table">
-              </tbody>
-          </table>
+    <div class="navbar bg-neutral text-neutral-content shadow-lg px-8">
+        <div class="flex-1">
+            <a class="btn btn-ghost text-xl font-bold">Admin Page</a>
         </div>
-      </div>
+        <div class="flex-none">
+            <a href="index.html" class="btn btn-sm btn-outline btn-accent">Ke Halaman User -></a>
+        </div>
     </div>
 
-    <div class="collapse collapse-arrow bg-base-100 shadow-md mt-6 border border-gray-200">
-      <input type="checkbox" /> 
-      <div class="collapse-title text-xl font-medium text-gray-600">
-        Lihat Semua Data Peminjaman
-      </div>
-      <div class="collapse-content"> 
-        <div class="overflow-x-auto">
-            <table class="table table-xs w-full">
-              <thead>
-                <tr>
-                  <th>Status</th>
-                  <th>Organisasi</th>
-                  <th>Ruang</th>
-                  <th>Waktu</th>
-                </tr>
-              </thead>
-              <tbody id="admin-all-table"></tbody>
-            </table>
-          </div>
-      </div>
+    <div class="max-w-6xl mx-auto p-8">
+
+        <div class="stats shadow w-full mb-8 bg-gray">
+            <div class="stat">
+                <div class="stat-title text-warning font-bold">Menunggu Persetujuan</div>
+                <div class="stat-value text-warning" id="count-pending">0</div>
+                <div class="stat-desc">Request baru yang perlu dicek</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-title text-success font-bold">Disetujui Hari Ini</div>
+                <div class="stat-value text-success" id="count-approved">0</div>
+                <div class="stat-desc">Jadwal fix</div>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl border border-gray-200">
+            <div class="card-body">
+                <h2 class="card-title text-red-500 mb-4">Perlu Tindakan</h2>
+                <div class="overflow-x-auto">
+                    <table class="table w-full">
+                        <thead>
+                            <tr class="bg-base-200">
+                                <th>Pemohon</th>
+                                <th>Ruangan & Waktu</th>
+                                <th>Keperluan</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-pending-table">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="collapse collapse-arrow bg-base-100 shadow-md mt-6 border border-gray-200">
+            <input type="checkbox" />
+            <div class="collapse-title text-xl font-medium text-gray-600">
+                Lihat Semua Data Peminjaman
+            </div>
+            <div class="collapse-content">
+                <div class="overflow-x-auto">
+                    <table class="table table-xs w-full">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Organisasi</th>
+                                <th>Nama Peminjam</th>
+                                <th>Ruang</th>
+                                <th>Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-all-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end mb-4">
+            <button onclick="add_room_modal.showModal()" class="btn btn-primary text-white shadow-lg">
+                + Tambah Ruangan
+            </button>
+        </div>
     </div>
 
-  </div>
+    <dialog id="add_room_modal" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Tambah Ruangan Baru</h3>
+      <p class="py-2 text-sm text-gray-500">Semua kolom wajib diisi.</p>
+      
+      <form id="add-room-form" class="space-y-3 mt-4">
+        
+        <div class="form-control">
+            <label class="label"><span class="label-text">Nama Ruangan *</span></label>
+            <input type="text" id="new-room-name" placeholder="Contoh: Theater D3" class="input input-bordered w-full" required />
+        </div>
 
-  <script type="module" src="/admin.js"></script>
+        <div class="form-control">
+            <label class="label"><span class="label-text">Kapasitas (Orang) *</span></label>
+            <input type="number" id="new-room-capacity" placeholder="Contoh: 50" class="input input-bordered w-full" required />
+        </div>
+
+        <div class="form-control">
+            <label class="label"><span class="label-text">Lokasi / Gedung *</span></label>
+            <input type="text" id="new-room-building" placeholder="Contoh: Gedung Utama Lt. 2" class="input input-bordered w-full" required />
+        </div>
+
+        <div class="form-control">
+            <label class="label"><span class="label-text">Fasilitas *</span></label>
+            <textarea id="new-room-facilities" class="textarea textarea-bordered h-20" placeholder="Contoh: AC, Proyektor" required></textarea>
+        </div>
+
+        <div class="form-control">
+            <label class="label"><span class="label-text">Status Kerusakan *</span></label>
+            <textarea id="new-room-issues" class="textarea textarea-bordered h-20" placeholder="Ketik '-' jika tidak ada kerusakan" required></textarea>
+        </div>
+        
+        <div class="modal-action">
+            <button type="button" class="btn" onclick="add_room_modal.close()">Batal</button>
+            <button type="submit" class="btn btn-primary text-white">Simpan Ruangan</button>
+        </div>
+      </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
+
+
+
+    <script type="module" src="/admin.js"></script>
 </body>
+
 </html>

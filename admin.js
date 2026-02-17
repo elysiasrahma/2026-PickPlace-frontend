@@ -1,13 +1,12 @@
 import "./src/style.css";
 
-const API_URL = "http://localhost:5250/api/bookings";
+const API_URL = "http://localhost:5250/api";
 
 async function loadAdminDashboard() {
   try {
-    const resActive = await fetch(`${API_URL}?isHistory=false`);
+    const resActive = await fetch(`${API_URL}/bookings?isHistory=false`);
     const dataActive = await resActive.json();
-
-    const resHistory = await fetch(`${API_URL}?isHistory=true`);
+    const resHistory = await fetch(`${API_URL}/bookings?isHistory=true`);
     const dataHistory = await resHistory.json();
 
     const allBookings = [...dataActive, ...dataHistory];
@@ -30,18 +29,17 @@ function renderPendingTable(data) {
   const table = document.getElementById("admin-pending-table");
   
   if (data.length === 0) {
-    table.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-400 italic">Tidak ada request baru</td></tr>`;
+    table.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-400 italic">Tidak ada request baru.</td></tr>`;
     return;
   }
 
   table.innerHTML = data.map(item => {
     const startDate = new Date(item.StartTime);
     const endDate = new Date(item.EndTime);
-
     const startStr = startDate.toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     
     let endStr;
-    if (startDate.getDate() === endDate.getDate() && startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
+    if (startDate.getDate() === endDate.getDate() && startDate.getMonth() === endDate.getMonth()) {
         endStr = endDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     } else {
         endStr = endDate.toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -63,13 +61,9 @@ function renderPendingTable(data) {
         <td class="text-center">
             <div class="join">
                 <button class="btn btn-sm btn-success join-item text-white btn-action" 
-                    data-id="${item.Id}" data-action="Approved">
-                    ✓ Terima
-                </button>
+                    data-id="${item.Id}" data-action="Approved">✓</button>
                 <button class="btn btn-sm btn-error join-item text-white btn-action" 
-                    data-id="${item.Id}" data-action="Rejected">
-                    ✕ Tolak
-                </button>
+                    data-id="${item.Id}" data-action="Rejected">✕</button>
             </div>
         </td>
       </tr>
@@ -79,12 +73,14 @@ function renderPendingTable(data) {
 
 function renderAllTable(data) {
     const table = document.getElementById("admin-all-table");
+    
     table.innerHTML = data.map(item => `
         <tr>
             <td><span class="badge ${getStatusColor(item.Status)} badge-xs">${item.Status}</span></td>
-            <td>${item.Organization}</td>
-            <td>${item.Room?.RoomName}</td>
-            <td>${new Date(item.StartTime).toLocaleDateString('id-ID')}</td>
+            <td><div class="font-bold text-xs">${item.Organization}</div></td>
+            <td><div class="text-xs text-gray-600">${item.BorrowerName}</div></td>
+            <td><div class="text-xs">${item.Room?.RoomName || "-"}</div></td>
+            <td><div class="text-xs">${new Date(item.StartTime).toLocaleDateString('id-ID')}</div></td>
         </tr>
     `).join("");
 }
@@ -102,8 +98,8 @@ document.addEventListener("click", async (e) => {
         const action = e.target.getAttribute("data-action");
         
         const confirmMsg = action === "Approved" 
-            ? "Yakin ingin MENYETUJUI peminjaman ini?" 
-            : "Yakin ingin MENOLAK peminjaman ini?";
+            ? "Setujui peminjaman ini?" 
+            : "Tolak peminjaman ini?";
 
         if (confirm(confirmMsg)) {
             await updateStatus(id, action);
@@ -113,22 +109,50 @@ document.addEventListener("click", async (e) => {
 
 async function updateStatus(id, newStatus) {
     try {
-        const res = await fetch(`${API_URL}/${id}/status`, {
+        const res = await fetch(`${API_URL}/bookings/${id}/status`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newStatus)
         });
 
-        if (res.ok) {
-            loadAdminDashboard();
-        } else {
-            const msg = await res.text();
-            alert("Gagal update: " + msg);
-        }
+        if (res.ok) loadAdminDashboard();
+        else alert("Gagal update status.");
     } catch (err) {
         console.error(err);
         alert("Error koneksi backend.");
     }
+}
+
+const addRoomForm = document.getElementById("add-room-form");
+if (addRoomForm) {
+    addRoomForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const payload = {
+            RoomName: document.getElementById("new-room-name").value,
+            Capacity: parseInt(document.getElementById("new-room-capacity").value),
+            Building: document.getElementById("new-room-building").value,
+            Facilities: document.getElementById("new-room-facilities").value,
+            Issues: document.getElementById("new-room-issues").value,
+            IsDeleted: false // Penting untuk Backend
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/rooms`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Ruangan berhasil ditambahkan!");
+                document.getElementById("add_room_modal").close();
+                document.getElementById("add-room-form").reset();
+            } else {
+                alert("Gagal menyimpan ruangan.");
+            }
+        } catch (err) { console.error(err); }
+    });
 }
 
 loadAdminDashboard();
